@@ -132,36 +132,73 @@
 
     \subsection{Tehnologije i pristup}
 
-    Implementacija sistema zasniva se na Java programskom jeziku i Spring Boot okruženju, koje čini osnovni sloj aplikacione logike. Uz savremene pristupe kontejnerizacije i principe razvoja cloud-native aplikacija, postignuta je visoka prenosivost i konzistentnost sistema u različitim okruženjima. Docker je korišćen za pakovanje i izolaciju aplikacije, dok je GitHub Actions iskorišćen za potpunu automatizaciju procesa kontinuirane integracije i isporuke (CI/CD).
+    Implementacija sistema zasniva se na \textbf{Java} \cite{java_language} programskom jeziku 
+    i \textbf{Spring Boot} \cite{spring_boot} 
+    okruženju, koje čini osnovni sloj aplikacione logike. Uz savremene pristupe 
+    kontejnerizacije i principe razvoja \textit{cloud-native} aplikacija, postignuta je 
+    visoka prenosivost i konzistentnost sistema u različitim okruženjima. \textbf{Docker} \cite{docker} je 
+    korišćen za pakovanje i izolaciju aplikacije, dok je \textbf{GitHub Actions} \cite{github} iskorišćen 
+    za potpunu automatizaciju procesa kontinuirane integracije i isporuke (\textbf{\textit{CI/CD}} \footnote{\textit{CI/CD - Continuous Integration/Continuous Deployment}}).
 
-    Aplikacija je postavljena na Netcup cloud infrastrukturu, čime je obezbeđeno ekonomično i skalabilno rešenje za produkcijski hosting.
+    Aplikacija je postavljena na \textbf{Netcup cloud} \cite{netcup} infrastrukturu, čime je obezbeđeno ekonomično i 
+    skalabilno rešenje za produkcijski hosting.
 
     Ključne tehnologije korišćene u projektu su:
     \begin{itemize}
-    \item \textbf{Razvojna platforma:} Java i Spring Boot, sa implementacijom RESTful API-ja  
-    \item \textbf{Kontejnerizacija:} Docker, za pakovanje aplikacije i izolaciju od okruženja  
-    \item \textbf{Orkestracija:} Docker Compose, za upravljanje više kontejnera u okviru jednog sistema  
-    \item \textbf{Automatizacija (CI/CD):} GitHub Actions, za automatsko testiranje i postavljanje aplikacije na server  
-    \item \textbf{Baza podataka:} Relaciona baza podataka (MySQL) pokrenuta u posebnom kontejneru  
-    \item \textbf{Cloud infrastruktura:} Netcup VPS, korišćen za postavljanje i pokretanje sistema u produkciji
+    \item \textbf{Razvojna platforma:} \textbf{Java} i \textbf{Spring Boot}, sa implementacijom \textit{RESTful API}-ja\footnote{\textit{RESTful API (Representational State Transfer)} je pristup pravljenja web servisa koji koriste \textit{HTTP} protokol za komunikaciju i manipulisanje resursima na serveru.}
+ za komunikaciju između klijenta i servera
+    \item \textbf{Kontejnerizacija:} \textbf{Docker}, za pakovanje aplikacije i izolaciju od okruženja  
+    \item \textbf{Orkestracija:} \textbf{Docker Compose}, za upravljanje više kontejnera u okviru jednog sistema  
+    \item \textbf{Automatizacija (CI/CD):} \textbf{GitHub Actions}, za automatsko testiranje i postavljanje aplikacije na server  
+    \item \textbf{Baza podataka:} Relaciona baza podataka (\textbf{MySQL} \cite{mysql}) pokrenuta u posebnom kontejneru  
+    \item \textbf{Cloud infrastruktura:} \textbf{Netcup VPS}, korišćen za postavljanje i pokretanje sistema u produkciji
     \end{itemize}
     
-    Poseban akcenat stavljen je na automatizaciju procesa postavljanja aplikacije, što omogućava brzo isporučivanje novih funkcionalnosti kroz jednostavno slanje izmena u repozitorijum (git push). Ovakav pristup značajno smanjuje vreme potrebno za implementaciju i testiranje izmena.
-    Izvorni kod i konfiguracija dostupni su na GitHub platformi \footnote{\url{https://github.com/Kovelja009/conf_room}}.
+    Poseban akcenat stavljen je na automatizaciju procesa postavljanja aplikacije, 
+    što omogućava brzo isporučivanje novih funkcionalnosti kroz jednostavno slanje izmena u 
+    repozitorijum (\textit{git push}). Ovakav pristup značajno smanjuje vreme potrebno za 
+    implementaciju i testiranje izmena.
+    Izvorni kod i konfiguracija dostupni su na \textbf{GitHub} platformi \footnote{\url{https://github.com/Kovelja009/conf_room}}.
 
     \section{Arhitekturni obrasci: Monolit vs Mikroservisi}
     \subsection{Teoretske osnove}
 
-    \textbf{Monolitna arhitektura} predstavlja tradicionalni pristup razvoju softverskih sistema, pri kojem se celokupna funkcionalnost implementira u okviru jedne celovite i zajednički postavljene aplikacije. U ovom modelu, sve komponente sistema – upravljanje korisnicima, poslovna logika, pristup bazi podataka i prikaz podataka (interfejs) – integrisane su unutar jednog izvršnog procesa. Komunikacija između delova sistema odvija se putem direktnih poziva funkcija unutar iste aplikacije, što može doprineti boljim performansama, ali istovremeno dovodi do jake povezanosti (tight coupling) između modula i smanjenja fleksibilnosti u razvoju i održavanju.
+    \textbf{Monolitna arhitektura} predstavlja tradicionalni pristup razvoju softverskih sistema
+    , pri kojem se celokupna funkcionalnost implementira u okviru jedne celovite i 
+    zajednički postavljene aplikacije. U ovom modelu, sve komponente sistema - upravljanje 
+    korisnicima, poslovna logika, pristup bazi podataka i prikaz podataka 
+    (interfejs) - integrisane su unutar jednog izvršnog procesa. Komunikacija između delova 
+    sistema odvija se putem direktnih poziva funkcija unutar iste aplikacije, što može 
+    doprineti boljim performansama, ali istovremeno dovodi do 
+    jake povezanosti (\textit{tight coupling}) između modula i smanjenja fleksibilnosti u 
+    razvoju i održavanju.
 
-    S druge strane, \textbf{mikroservisna arhitektura} predstavlja savremeniji pristup koji uvodi koncept distribuiranih sistema. Aplikacija se u ovom modelu sastoji od niza nezavisnih servisa, od kojih je svaki odgovoran za tačno određenu poslovnu funkcionalnost. Svaki mikroservis poseduje sopstvenu bazu podataka i može se razvijati, testirati i postavljati potpuno nezavisno od ostalih servisa. Ovakav pristup omogućava veću fleksibilnost i skalabilnost, ali istovremeno uvodi dodatnu složenost, naročito u oblastima kao što su otkrivanje servisa (service discovery), međuservisna komunikacija i upravljanje transakcijama koje obuhvataju više servisa.
+    S druge strane, \textbf{mikroservisna arhitektura} predstavlja savremeniji pristup 
+    koji uvodi koncept distribuiranih sistema. Aplikacija se u ovom modelu sastoji od niza 
+    nezavisnih servisa, od kojih je svaki odgovoran za tačno određenu poslovnu funkcionalnost. 
+    Svaki mikroservis poseduje sopstvenu bazu podataka i može se razvijati, testirati i 
+    postavljati potpuno nezavisno od ostalih servisa. Ovakav pristup omogućava veću fleksibilnost 
+    i skalabilnost, ali istovremeno uvodi dodatnu složenost, naročito u oblastima kao što su 
+    otkrivanje servisa (\textit{service discovery}), međuservisna komunikacija i upravljanje 
+    transakcijama koje obuhvataju više servisa.
 
-    U kontekstu razvoja za cloud okruženje, oba arhitekturna pristupa mogu se uspešno implementirati uz korišćenje kontejnerskih tehnologija. Docker omogućava konzistentno postavljanje aplikacija bez obzira na konkretno okruženje u kojem se izvršavaju, dok platforme za orkestraciju poput Kubernetesa nude napredne mogućnosti za upravljanje servisima, automatsko skaliranje i raspodelu opterećenja. Konačan izbor arhitekture zavisi od specifičnih zahteva aplikacije, veličine i organizacije razvojnog tima, kao i infrastrukturnih i operativnih ograničenja.
-
+    \newpage
+    U kontekstu razvoja za \textit{cloud} okruženje, oba arhitekturna pristupa mogu se 
+    uspešno implementirati uz korišćenje kontejnerskih tehnologija. 
+    \textbf{Docker} omogućava konzistentno postavljanje aplikacija bez obzira na konkretno 
+    okruženje u kojem se izvršavaju, dok platforme za orkestraciju poput 
+    \textbf{Kubernetesa} \cite{kubernetes} nude napredne mogućnosti za upravljanje servisima, automatsko 
+    skaliranje i raspodelu opterećenja. Konačan izbor arhitekture zavisi od specifičnih zahteva 
+    aplikacije, veličine i organizacije razvojnog tima, kao i infrastrukturnih i operativnih 
+    ograničenja.
+    
+    \newpage
     \subsection{Komparativna analiza}
 
-
-    Poređenje monolitne i mikroservisne arhitekture prikazano je u Tabeli \ref{tabela:monolit_vs_mikroservisi}. Ova tabela sumira ključne aspekte oba pristupa, uključujući skalabilnost, izolaciju grešaka, kompleksnost razvoja, performanse, složenost CI/CD procesa i tehnologije koje se koriste. 
+    Poređenje monolitne i mikroservisne arhitekture prikazano je u Tabeli \ref{tabela:monolit_vs_mikroservisi}. 
+    Ova tabela sumira ključne aspekte oba pristupa, uključujući skalabilnost, 
+    izolaciju grešaka, kompleksnost razvoja, performanse, složenost \textit{CI/CD} procesa i 
+    tehnologije koje se koriste. 
 
     \hspace{0.4cm}
     \begin{table}[H]    
@@ -182,13 +219,13 @@
             \hline
             Kompleksnost razvoja & Niska & Visoka & Monolit za male timove, mikroservisi za kompleksne sisteme \\
             \hline
-            Performanse & Brže (lokalni pozivi) & Sporije (mreža) & Direktan metod vs HTTP/REST \\
+            Performanse & Brže (lokalni pozivi) & Sporije (mreža) & Direktan metod vs \textit{HTTP/REST} \\
             \hline
-            Deployment & Jednostavan & Složen & CI/CD zahteva više skripti za mikroservise \\
+            \textit{Deployment} & Jednostavan & Složen & \textit{CI/CD} zahteva više skripti za mikroservise \\
             \hline
             Komunikacija & Lokalni pozivi & Međuservisna komunikacija & Direktan pristup vs API pozivi \\
             \hline
-            CI/CD složenost & Jedan tok & Više tokova & Veći broj servisa, nezavisna postavljanja \\
+            \textit{CI/CD} složenost & Jedan tok & Više tokova & Veći broj servisa, nezavisna postavljanja \\
             \hline
             Tehnologije & Jedinstven stek & Potencijalno više tehnologija & Manji timovi preferiraju doslednost \\
             \hline
@@ -209,7 +246,10 @@
 
     \subsubsection*{Struktura tima i organizacioni faktori}
 
-    \textit{Conway-ev zakon} sugeriše da arhitektura sistema odražava strukturu komunikacije unutar organizacije koja ga razvija. U slučaju malih timova (npr. dva programera), što je karakteristično za analizirani projekat, \textbf{monolitna arhitektura} se često pokazuje kao optimalan izbor jer omogućava:
+    \textit{Conway-ev zakon} sugeriše da arhitektura sistema odražava strukturu komunikacije 
+    unutar organizacije koja ga razvija. U slučaju malih timova (npr. dva programera), 
+    što je karakteristično za analizirani projekat, \textbf{monolitna arhitektura} se često 
+    pokazuje kao optimalan izbor jer omogućava:
     \begin{itemize}
         \item jedinstveno razvojno okruženje bez dodatnog koordinacionog opterećenja između \textit{frontend} i \textit{backend} programera,
         \item pojednostavljeno orkestriranje koda - direktan pristup zajedničkom kodu,
@@ -220,29 +260,43 @@
 
     Očekivano opterećenje predstavlja ključni faktor u izboru arhitekture:
     \begin{itemize}
-        \item \textbf{Nizak nivo saobraćaja} (desetine istovremenih korisnika): performanse monolita su u potpunosti dovoljne, dok bi mrežna latencija karakteristična za mikroservise predstavljala nepotreban trošak.
-        \item \textbf{Srednji nivo saobraćaja} (stotine korisnika): prelazna zona u kojoj su oba pristupa moguća i zavise od dodatnih faktora.
-        \item \textbf{Visok nivo saobraćaja} (hiljade i više korisnika): mikroservisna arhitektura omogućava horizontalno skaliranje i bolje upravljanje opterećenjem, što je ključno za očuvanje performansi i dostupnosti sistema.
+        \item \textbf{Nizak nivo saobraćaja} (desetine istovremenih korisnika): performanse monolita su 
+        u potpunosti dovoljne, dok bi mrežna latencija karakteristična za mikroservise predstavljala 
+        nepotreban trošak.
+        \item \textbf{Srednji nivo saobraćaja} (stotine korisnika): prelazna zona u kojoj su oba 
+        pristupa moguća i zavise od dodatnih faktora.
+        \item \textbf{Visok nivo saobraćaja} (hiljade i više korisnika): mikroservisna arhitektura 
+        omogućava horizontalno skaliranje i bolje upravljanje opterećenjem, što je ključno za 
+        očuvanje performansi i dostupnosti sistema.
     \end{itemize}
 
-    \subsubsection*{Brzina razvoja i učestalost deployment-a aplikacije}
+    \subsubsection*{Brzina razvoja i učestalost \textit{deployment}-a aplikacije}
 
-    Učestalost \textit{deployment-a} značajno utiče na odabir arhitekture:
+    Učestalost \textit{deployment}-a značajno utiče na odabir arhitekture:
     \begin{itemize}
-        \item \textbf{Čest deployment} (npr. više puta dnevno tokom razvoja): automatizacija CI/CD procesa postaje od suštinskog značaja, ali je jednostavnija za implementaciju u okviru monolita.
-        \item \textbf{Koordinacija više servisa}: mikroservisi zahtevaju naprednu orkestraciju kako bi se obezbedila sinhronizovana postavljanja.
+        \item \textbf{Čest \textit{deployment}} (npr. više puta dnevno tokom razvoja): automatizacija 
+        \textit{CI/CD} procesa postaje od suštinskog značaja, ali je jednostavnija za 
+        implementaciju u okviru monolita.
+        \item \textbf{Koordinacija više servisa}: mikroservisi zahtevaju naprednu orkestraciju kako 
+        bi se obezbedila sinhronizovana postavljanja.
     \end{itemize}
 
     \subsubsection*{Tehnološka ograničenja i operativna zrelost}
 
     DevOps kapaciteti organizacije predstavljaju značajan ograničavajući faktor:
     \begin{itemize}
-        \item \textbf{Ograničeno operativno iskustvo}: postavljanje i nadgledanje monolita je jednostavnije i zahteva manje alata i znanja.
-        \item \textbf{Napredni operativni kapaciteti}: mikroservisi zahtevaju složenije mehanizme za otkrivanje servisa (\textit{service discovery}), balansiranje opterećenja (\textit{load balancing}) i distribuirani nadzor sistema.
-        \item \textbf{Kompleksnost komunikacije između servisa}: direktni pozivi metoda naspram HTTP/REST API poziva za razmenu podataka.
+        \item \textbf{Ograničeno operativno iskustvo}: postavljanje i nadgledanje monolita je 
+        jednostavnije i zahteva manje alata i znanja.
+        \item \textbf{Napredni operativni kapaciteti}: mikroservisi zahtevaju složenije mehanizme 
+        za otkrivanje servisa (\textit{service discovery}), balansiranje 
+        opterećenja (\textit{load balancing}) i distribuirani nadzor sistema.
+        \item \textbf{Kompleksnost komunikacije između servisa}: direktni pozivi metoda naspram 
+        \textit{HTTP/REST API} poziva za razmenu podataka.
     \end{itemize}
 
-    Konačna odluka treba da uspostavi ravnotežu između trenutnih potreba za brzinom razvoja i dugoročnih zahteva za skalabilnošću, uzimajući u obzir sposobnosti postojećeg tima i predviđeni rast sistema.
+    Konačna odluka treba da uspostavi ravnotežu između trenutnih potreba za brzinom razvoja i 
+    dugoročnih zahteva za skalabilnošću, uzimajući u obzir sposobnosti postojećeg tima i 
+    predviđeni rast sistema.
 
 
 
