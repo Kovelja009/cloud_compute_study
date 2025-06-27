@@ -154,6 +154,7 @@
     \item \textbf{Cloud infrastruktura:} \textbf{Netcup VPS}, korišćen za postavljanje i pokretanje sistema u produkciji
     \end{itemize}
     
+    \newpage
     Poseban akcenat stavljen je na automatizaciju procesa postavljanja aplikacije, 
     što omogućava brzo isporučivanje novih funkcionalnosti kroz jednostavno slanje izmena u 
     repozitorijum (\textit{git push}). Ovakav pristup značajno smanjuje vreme potrebno za 
@@ -297,6 +298,149 @@
     Konačna odluka treba da uspostavi ravnotežu između trenutnih potreba za brzinom razvoja i 
     dugoročnih zahteva za skalabilnošću, uzimajući u obzir sposobnosti postojećeg tima i 
     predviđeni rast sistema.
+
+    \newpage
+    \section{Funkcionalnosti sistema}
+
+    Razvijeni sistem za rezervaciju konferencijskih sala obuhvata tri ključne funkcionalne celine implementirane kao deo jedinstvene \textit{Spring Boot} aplikacije, čime je obezbeđen kompletan tok obrade zahteva korisnika, od autentifikacije do obaveštavanja putem elektronske pošte.
+
+    \subsubsection{Servis za autentifikaciju korisnika}
+
+    Mehanizam autentifikacije zasniva se na JWT \footnote{\textit{JSON Web Token}} standardu, koji 
+    omogućava sesije bez čuvanja stanja (\textit{stateless}), što je pogodno za skalabilna 
+    \textit{cloud} rešenja. U sistemu su definisane dve korisničke uloge:
+    \begin{itemize}
+    \item \textbf{Korisnik (USER)} - mogućnost kreiranja i upravljanja sopstvenim rezervacijama
+    \item \textbf{Menadžer (MANAGER)} - administrativna ovlašćenja: kreiranje korisničkih naloga i pregled analitičkih izveštaja
+    \end{itemize}
+
+    Registraciju korisnika vrši isključivo menadžer, čime se sprečava nekontrolisan pristup sistemu. Nakon registracije, korisniku se automatski prosleđuje elektronska poruka sa pristupnim podacima. Mehanizam za promenu lozinke funkcioniše putem bezbedne email procedure, gde se zahtevi za reset lozinke proveravaju na osnovu korisničkog imena i registrovane adrese elektronske pošte.
+
+    \newpage
+    \subsubsection{Servis za upravljanje rezervacijama}
+
+    Interfejs baziran na kalendarskom prikazu omogućava korisnicima intuitivan odabir termina. Sistem 
+    koristi naprednu logiku za detekciju konflikata, koja pored vremenskog preklapanja uvažava i 
+    obavezne periode za pripremu i čišćenje između rezervacija. U slučaju konflikta, korisniku se 
+    nudi objašnjenje kako bi u skladu sa tim prilagodio svoje planove.
+
+    Dodatno, korisnicima je omogućeno izmenjivanje i otkazivanje rezervacija koje još nisu započete, čime se obezbeđuje fleksibilnost u planiranju.
+
+    \subsubsection{Servis za elektronsku poštu}
+
+    Sistem automatski generiše obaveštenja putem elektronske pošte za sledeće slučajeve:
+    \begin{itemize}
+    \item Potvrda kreiranja, izmene i otkazivanja rezervacija
+    \item Dobrodošlica korisniku sa pristupnim podacima
+    \item Obaveštavanja o ažuriranjima naloga korisnika
+    \item Izveštaji i obaveštenja za administrativne korisnike
+    \end{itemize}
+
+    Poruke se generišu na osnovu unapred definisanih šablona koji uključuju dinamičke 
+    informacije (datum, vreme, naziv korisnika), kao i vizuelne elemente u skladu sa brendom firme.
+
+    \newpage
+    \subsubsection{Baza podataka}
+
+    Struktura baze zasniva se na relacionom modelu, a koristi se \textit{MySQL} kao sistem za upravljanje 
+    bazom podataka. Ključne tabele se mogu videti na \\ Slici \ref{fig:baza_struktura}.
+
+    \begin{figure}[h!]
+        \vspace{0.5cm}
+        \centering
+        \includegraphics[width=0.7\textwidth]{db.png}
+        \caption{Struktura baze podataka}
+        \label{fig:baza_struktura}
+    \end{figure}
+
+    Tabela \texttt{Working\_Hours} omogućava definisanje različitih radnih termina u 
+    zavisnosti od sezonskih rasporeda, praznika i posebnih događaja. Sistem je projektovan sa 
+    mogućnošću proširenja za podršku više sala, uz minimalan uticaj na postojeću logiku.
+
+    \newpage
+
+    \subsection{Arhitektura sistema}
+
+    Pregled arhitekture sistema prikazan je na Slici \ref{fig:arhitektura_sistema}.
+
+    \begin{figure}[h!]
+        \vspace{0.5cm}
+        \centering
+        \includegraphics[width=1.0\textwidth]{sistem.png}
+        \caption{Dva \textit{Docker} kontejnera su povezana preko virtualne mreže}
+        \label{fig:arhitektura_sistema}
+    \end{figure}
+
+    \subsubsection*{Aplikacioni kontejner (monolitna arhitektura)}
+
+    Svi servisi (autentifikacija, rezervacije, elektronska pošta) implementirani su kao deo jedne \textit{Spring Boot} aplikacije i distribuiraju se kao jedinstveni \texttt{JAR} \footnote{Java ARchive} fajl. Prednosti ovog pristupa uključuju:
+
+    \begin{itemize}
+    \item Direktni pozivi metoda unutar procesa (bez mrežne latencije)
+    \item Zajednički kontekst transakcija i konzistentnost podataka
+    \item Jedinstveni mehanizam za logovanje i rukovanje greškama
+    \item Centralizovano upravljanje konfiguracijom
+    \end{itemize}
+
+    \newpage
+
+    Docker fajl za izgradnju kontejnera izgleda ovako:
+
+    \begin{verbatim}
+    FROM openjdk:17-jdk-slim
+    COPY conf_room-0.0.1-SNAPSHOT.jar app.jar
+    EXPOSE 8082
+    ENTRYPOINT ["java", "-jar", "app.jar"]
+    \end{verbatim}
+
+    \subsubsection*{Kontejner sa bazom podataka}
+
+    Baza podataka koristi \textit{MySQL 8.0}, postavljena u posebnom kontejneru sa sledećim karakteristikama:
+    \begin{itemize}
+    \item Provera ispravnosti startovanja sistema (\textit{health check})
+    \item Upotreba trajnih volumena za očuvanje podataka
+    \end{itemize}
+    
+    \subsubsection*{Mreža i komunikacija između kontejnera}
+
+    Komunikacija između kontejnera odvija se unutar prilagožene \textbf{Docker} mreže, što omogućava:
+    \begin{itemize}
+      \item Otkrivanje servisa po imenu kontejnera
+      \item Izolaciju mrežnog sloja od host sistema
+      \item Konfigurisanje putem \texttt{.env} fajla
+      \item Bezbednu razmenu podataka unutar sistema
+    \end{itemize}
+
+    \subsection{Automatizacija putem CI/CD procesa}
+
+    \subsubsection*{GitHub Actions automatizacija}
+
+    Proces automatskog postavljanja aplikacije pokreće se svakim slanjem izmena na glavnu granu repozitorijuma (\texttt{main}). Sledeći koraci se izvršavaju automatski:
+    \begin{itemize}
+    \item Preuzimanje koda i izgradnja aplikacije (\textit{Maven build})
+    \item Usmeravanje konekcije ka serveru (\textit{SSH setup})
+    \item Čišćenje prethodnih fajlova i prebacivanje novih
+    \item Ponovno pokretanje kontejnera sa novom verzijom
+    \end{itemize}
+
+    Bezbednost je obezbeđena korišćenjem enkriptovanih ključeva i promenljivih okruženja (\textit{GitHub Secrets}).
+
+    \subsubsection*{Prednosti automatizovanog postavljanja}
+
+    Vreme potrebno za postavljanje aplikacije smanjeno je sa oko 15 minuta na manje od 3 minuta, 
+    što značajno ubrzava testiranje novih funkcionalnosti. Automatizacija takođe eliminiše problem 
+    razlika između lokalnog i produkcionog okruženja.
+
+    \newpage
+
+    \subsection{Postavljanje aplikacije na cloud (Netcup)}
+
+    Sistem je postavljen na \textbf{Netcup VPS} okruženje, koje predstavlja povoljno rešenje za 
+    očekivani broj korisnika. Izvršavanje aplikacije direktno 
+    preko \textit{Spring Boot runtime} okruženja omogućava efikasno korišćenje resursa.
+
+    Trenutni nivo \textit{VPS}-a je dovoljan za postojeći obim saobraćaja, 
+    a sistem je projektovan tako da podržava buduće unapređenje u skladu sa rastom broja korisnika.
 
 
 
