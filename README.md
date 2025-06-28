@@ -2,7 +2,7 @@
 
 ## 📋 About This Work
 
-This repository contains a master's thesis that analyzes the practical implementation of a conference room reservation system through the lens of modern cloud-native technologies and architectural approaches. The work explores when and why certain architectural approaches become justified based on business requirements and technical constraints.
+This repository contains a master's study paper that analyzes the practical implementation of a conference room reservation system through the lens of modern cloud-native technologies and architectural approaches. The work explores when and why certain architectural approaches become justified based on business requirements and technical constraints.
 
 ### 🎯 Objectives
 
