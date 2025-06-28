@@ -304,7 +304,7 @@
 
     Razvijeni sistem za rezervaciju konferencijskih sala obuhvata tri ključne funkcionalne celine implementirane kao deo jedinstvene \textit{Spring Boot} aplikacije, čime je obezbeđen kompletan tok obrade zahteva korisnika, od autentifikacije do obaveštavanja putem elektronske pošte.
 
-    \subsubsection{Servis za autentifikaciju korisnika}
+    \subsection{Servis za autentifikaciju korisnika}
 
     Mehanizam autentifikacije zasniva se na JWT \footnote{\textit{JSON Web Token}} standardu, koji 
     omogućava sesije bez čuvanja stanja (\textit{stateless}), što je pogodno za skalabilna 
@@ -317,7 +317,7 @@
     Registraciju korisnika vrši isključivo menadžer, čime se sprečava nekontrolisan pristup sistemu. Nakon registracije, korisniku se automatski prosleđuje elektronska poruka sa pristupnim podacima. Mehanizam za promenu lozinke funkcioniše putem bezbedne email procedure, gde se zahtevi za reset lozinke proveravaju na osnovu korisničkog imena i registrovane adrese elektronske pošte.
 
     \newpage
-    \subsubsection{Servis za upravljanje rezervacijama}
+    \subsection{Servis za upravljanje rezervacijama}
 
     Interfejs baziran na kalendarskom prikazu omogućava korisnicima intuitivan odabir termina. Sistem 
     koristi naprednu logiku za detekciju konflikata, koja pored vremenskog preklapanja uvažava i 
@@ -326,7 +326,7 @@
 
     Dodatno, korisnicima je omogućeno izmenjivanje i otkazivanje rezervacija koje još nisu započete, čime se obezbeđuje fleksibilnost u planiranju.
 
-    \subsubsection{Servis za elektronsku poštu}
+    \subsection{Servis za elektronsku poštu}
 
     Sistem automatski generiše obaveštenja putem elektronske pošte za sledeće slučajeve:
     \begin{itemize}
@@ -340,7 +340,7 @@
     informacije (datum, vreme, naziv korisnika), kao i vizuelne elemente u skladu sa brendom firme.
 
     \newpage
-    \subsubsection{Baza podataka}
+    \subsection{Baza podataka}
 
     Struktura baze zasniva se na relacionom modelu, a koristi se \textit{MySQL} kao sistem za upravljanje 
     bazom podataka. Ključne tabele se mogu videti na \\ Slici \ref{fig:baza_struktura}.
@@ -441,6 +441,95 @@
 
     Trenutni nivo \textit{VPS}-a je dovoljan za postojeći obim saobraćaja, 
     a sistem je projektovan tako da podržava buduće unapređenje u skladu sa rastom broja korisnika.
+
+    \section{Razlozi za izbor monolitne arhitekture}
+
+    \subsection{Analiza konteksta}
+
+    Izbor arhitekture u ovom projektu rezultat je specifičnih poslovnih i tehničkih ograničenja, na osnovu kojih je monolitna arhitektura predstavljala najracionalnije rešenje u datim okolnostima.
+
+    \subsubsection*{Zahtevi klijenta i očekivano opterećenje sistema}
+
+    Klijent (poslovni centar) postavio je jasne funkcionalne zahteve:
+    \begin{itemize}
+    \item Očekivani broj istovremenih korisnika: desetine korisnika, što je znatno ispod praga koji bi opravdao potrebu za mikroservisnom arhitekturom
+    \item Scenario sa jednom zgradom i jednom salom - jednostavne \textit{CRUD} \footnote{Create, Read, Update, Delete} operacije
+    \item Predvidivost nivoa opterećenja servisa (tokom radnog vremena)
+    \item Potreba za brzim i ekonomičnim rešenjem
+    \end{itemize}
+
+    Iz \textit{ROI} \footnote{Return on Investment} aspekta, uvođenje složenije distribuirane arhitekture bi predstavljalo 
+    bespotrebno komplikovanje u odnosu na realne potrebe.
+
+    \subsubsection*{Ograničenja u vezi sa timom i rokovima}
+
+    Sistem je razvijen u okviru dvočlanog tima (frontend i backend/DevOps), što je u velikoj meri uticalo na izbor arhitekture:
+    \begin{itemize}
+    \item Troškovi koordinacije u mikroservisnim okruženjima bi bili nesrazmerno visoki za ovako mali tim
+    \item Jedinstvena baza koda olakšava razmenu znanja i sinhronizaciju razvoja
+    \item Vremenski okvir od samo mesec i po dana predstavljao je dodatno ograničenje koje isključuje primenu kompleksnih arhitektura
+    \end{itemize}
+
+    U skladu sa Konvejovim zakonom (\textit{Conway's Law} \cite{ConwaysLaw}) - arhitektura softvera je povezana sa strukturom tima i organizacije.
+    U našem slučaju, jedan član je odgovoran za frontend, a drugi za backend i DevOps aspekte, što je dodatno favorizovalo monolitnu arhitekturu.
+
+    \newpage
+
+    \subsection{Prednosti monolitne arhitekture u datom kontekstu}
+
+    \subsubsection*{Prednosti u razvoju i implementaciji}
+
+    Monolitni pristup omogućio je jedinstveno razvojno okruženje:
+    \begin{itemize}
+    \item Komunikacija unutar procesa: direktni pozivi metoda umesto \texttt{HTTP} poziva (kašnjenje reda veličine mikrosekundi u poređenju sa milisekundama)
+    \item Zajednički kontekst transakcija: \textit{ACID} \footnote{\textit{Atomicity, Consistency, Isolation, Durability}} svojstva obuhvataju sve komponente
+    \item Automatska konfiguracija putem \textit{Spring Boot}-a
+    \end{itemize}
+
+    \subsubsection*{Operativna jednostavnost}
+
+    Postavljanje i održavanje aplikacije znatno su jednostavniji:
+    \begin{itemize}
+    \item Jedinstveni artefakt za izgradnju, testiranje i postavljanje
+    \item Nadzor i logovanje vrše se u okviru jedne aplikacione instance
+    \item Niski infrastrukturni troškovi - dovoljan osnovni VPS bez potrebe za platformama za orkestraciju
+    \end{itemize}
+
+    \newpage
+    
+    \subsection{Kritički osvrt}
+
+    \subsubsection*{Analiza kompromisa}
+
+    Ograničenja monolitne arhitekture su poznata i svesno prihvaćena:
+    \begin{itemize}
+    \item Skalabilnost: vertikalna skalabilnost zadovoljava trenutne potrebe; horizontalna skalabilnost se može uvesti kasnije
+    \item Tehnološka ograničenja: svi servisi koriste isti stek tehnologija
+    \item Skaliranje tima: ovakav pristup nije pogodan za veliki tim, ali je optimalan za dvočlani tim
+    \item Održavanje: monolit može postati teško održiv sa rastom broja funkcionalnosti
+    \end{itemize}
+
+    \subsubsection*{Kada bi mikroservisna arhitektura bila primerenija}
+
+    Mikroservisna arhitektura postaje pogodnija u sledećim scenarijima:
+    \begin{itemize}
+    \item Tim sa više od pet članova: opravdava razdvajanje sistema na servise radi efikasnijeg razvoja
+    \item Broj korisnika veći od 1000 istovremenih: potreba za nezavisnim skaliranjem pojedinih komponenti
+    \item Regulatorni zahtevi: potreba za izolacijom podataka i većom kontrolom pristupa
+    \end{itemize}
+
+    \newpage
+
+    \subsubsection*{Validacija odluke}
+
+    Izbor monolitne arhitekture u ovom slučaju pokazao se kao pragmatično i opravdano rešenje:
+    \begin{itemize}
+    \item Planirani rok ispoštovan - sistem postavljen u roku od 1.5 meseca
+    \item Performanse su bile zadovoljavajuće za očekivani nivo opterećenja
+    \item Klijent je u potpunosti zadovoljen - sistem ispunjava sve poslovne zahteve
+    \end{itemize}
+
+    \textbf{Strategija za buduću migraciju:} eventualna tranzicija ka mikroservisima može započeti izdvajanjem servisa za slanje email obaveštenja, zatim servisa za autentifikaciju, i postepeno dovesti do potpune dekompozicije, ukoliko to budu opravdavale nove poslovne potrebe.
 
 
 
