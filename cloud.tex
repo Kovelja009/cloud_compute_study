@@ -618,6 +618,41 @@
     postepena ažuriranja (\textit{rolling updates}) omogućavaju neprekidno korišćenje servisa. \textit{Health checks} testovi osiguravaju da 
     samo funkcionalni servisi primaju saobraćaj.
 
+    \newpage
+    \section{Zaključak}
+
+    U ovom radu prikazana je praktična realizacija sistema za rezervaciju prostorija, sa 
+    posebnim osvrtom na izbor arhitekture u savremenom \textit{cloud} okruženju. Pokazano je 
+    da \textbf{uslovi i potrebe konkretnog sistema igraju ključnu ulogu} prilikom 
+    izbora arhitekture.
+
+    \subsection*{Ključni nalazi}
+
+    Odluka da se koristi monolitna arhitektura bila je u potpunosti opravdana datim ograničenjima: mali tim (dva razvojna inženjera), kratak vremenski okvir (mesec i po dana), kao i očekivano nisko opterećenje sistema (nekoliko desetina korisnika). Ovakav pristup omogućio je uspešnu isporuku sistema u predviđenom roku.
+
+    Primenom \textit{Conway-jevog zakona} potvrđeno je da je arhitektura sistema prirodno proizašla 
+    iz organizacije i strukture tima.
+
+    Upotreba \textit{cloud-native} tehnologija, kao što su \textbf{Docker} i \textbf{GitHub Actions}, značajno je ubrzala 
+    razvojni ciklus kroz automatizaciju postavljanja aplikacije na \textit{clould}. Smanjenjem vremena 
+    potrebnog za postavljanje sa 15 na svega 3 minuta omogućeno je brzo i često postavljanje novih 
+    verzija, što je bilo ključno za iterativni razvoj.
+
+    \newpage
+    \subsection*{Budući smerovi razvoja}
+
+    U narednim fazama razvoja sistem se može proširivati u dva pravca: funkcionalno i kroz promenu arhitekture.
+
+    Funkcionalno, sistem se može unaprediti podrškom za više sala, integracijom sa eksternim kalendarima i uvođenjem napredne statistike za administratore. Takođe, dalji razvoj može obuhvatiti bolji nadzor i automatsko testiranje radi povećanja pouzdanosti i održivosti.
+
+    Iz aspekta arhitekture, najpre je moguće izdvojiti servis za slanje imejlova kao nezavisnu 
+    komponentu, čime bi se započeo prelazak ka mikroservisnoj arhitekturi. U daljem koraku, primenom 
+    orkestracionih alata poput \\ \textbf{Kubernetes}-a, može se omogućiti automatsko skaliranje i lakše upravljanje višestrukim servisima.
+
+    Na taj način, sistem ostaje fleksibilan i tehnološki održiv, sa jasnim pravcem ka daljoj modularizaciji i proširenju u skladu sa rastućim poslovnim potrebama.
+
+
+
 
 \newpage
 \printbibliography[title={Literatura}]
