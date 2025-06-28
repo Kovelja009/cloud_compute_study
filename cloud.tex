@@ -531,6 +531,92 @@
 
     \textbf{Strategija za buduću migraciju:} eventualna tranzicija ka mikroservisima može započeti izdvajanjem servisa za slanje email obaveštenja, zatim servisa za autentifikaciju, i postepeno dovesti do potpune dekompozicije, ukoliko to budu opravdavale nove poslovne potrebe.
 
+    \newpage
+    \section{Skalabilnost i buduća modularizacija}
+
+    \subsection{Horizontalno skaliranje monolitne arhitekture}
+
+    U situacijama kada broj istovremenih korisnika pređe prag od 100 korisnika, moguće je sprovesti horizontalno skaliranje postojeće monolitne arhitekture bez potrebe za njenom potpunom transformacijom.
+
+    \subsubsection*{Distribucija opterećenja (\textit{Load Balancing})}
+
+    Implementacijom balansa opterećenja (npr. korišćenjem alata kao što je \\ \texttt{nginx} \cite{nginx}) omogućava se raspodela dolaznih zahteva na više instanci iste aplikacije. Ova strategija ne zahteva izmene u kôdu, već se zasniva na replikaciji aplikacije na više servera.
+
+    Povećanje broja instanci zahteva koordinaciju konekcija prema bazi podataka. Svaka instanca održava svoj sopstveni ``pool'' konekcija, ali ukupan broj istovremenih veza mora biti pažljivo ograničen i praćen na nivou baze.
+
+    \subsubsection*{Strategije skaliranja baze podataka}
+
+    Dalje skaliranje baze moguće je implementacijom tzv. \textit{``read replica''} arhitekture, gde se operacije upisa šalju ka glavnom (\textit{master}) serveru, dok se upiti za čitanje (posebno analitički zahtevi) prosleđuju sekundarnim (\textit{read-only}) instancama baze.
+
+    Uvođenje keš sloja kao što je \texttt{Redis} \cite{redis} može značajno poboljšati performanse sistema, naročito pri učestalim pristupima statičnim podacima (radno vreme, sesije korisnika, rezultati detekcije konflikata). Keš strategija mora obezbediti konzistentnost podataka prilikom izmene termina.
+
+    \subsection{Postepena tranzicija ka mikroservisnoj arhitekturi}
+
+    Ukoliko se u budućnosti ukaže potreba za višim stepenom skalabilnosti 
+    (preko 1000 korisnika ili razvojni tim sa više od 5 članova), sistem može migrirati ka 
+    mikroservisnoj arhitekturi, po uzoru na tzv. \textit{``Strangler Fig Pattern''}\footnote{\textit{``Strangler Fig''} obrazac migracije označava postepenu 
+    zamenu funkcionalnosti unutar monolita sa novim mikroservisima bez potrebe za potpunim prekidom 
+    postojećeg \\ sistema. \cite{fowler2004strangler}}.
+
+
+    \subsubsection*{Sekvenca modularizacije}
+
+    Prvi korak u modularizaciji predstavlja izdvajanje \textbf{servisa za slanje elektronske pošte}, budući da je slabije povezan sa ostatkom sistema. Ova funkcionalnost se prirodno odvija asinhrono i može se izdvojiti implementacijom reda 
+    poruka (npr. \texttt{RabbitMQ} \cite{rabbitmq}), gde monolit emituje događaje, a novi servis ih obrađuje nezavisno.
+
+    Izdvajanje \textbf{servisa za autentifikaciju} predstavlja \textbf{složeniji korak}, jer je autentifikacija 
+    prisutna u gotovo svim delovima sistema. Zbog toga je neophodno uspostaviti \textbf{centralizovani servis} 
+    za upravljanje instancama servisa koji mora biti visoko dostupan i bezbedan, jer se sve 
+    ostale komponente sistema oslanjaju na njega. U ovoj fazi migracije uvodi se i \textit{API Gateway}, koji 
+    preuzima ulogu centralizovanog mesta za primanje korisničkih zahteva i njihovo prosleđivanje 
+    odgovarajućim servisima, uz dodatne funkcionalnosti kao što su \textbf{autentifikacija, 
+    autorizacija i limitiranje saobraćaja}.
+
+    Konačna dekompozicija vodi ka potpunom razdvajanju sistema na nezavisne mikroservise, 
+    pri čemu svaki poseduje sopstvenu bazu podataka i nezavisan životni ciklus. Ovaj pristup omogućava, 
+    na primer, dodavanje ``Servisa za upravljanje poslovnicama'' bez uticaja na postojeće funkcionalnosti.
+
+    \newpage
+    \subsubsection*{Definisanje granica servisa}
+
+    Granice između servisa treba da budu definisane na osnovu poslovnih celina, a ne po 
+    tehničkim slojevima. Na primer:
+    \begin{itemize}
+        \item Servis za upravljanje korisnicima (engl. \textit{User Management}) - zadužen za identitet i kontrolu pristupa
+        \item Servis za rezervacije (engl. \textit{Booking}) - logika rezervacija, detekcija konflikata, upravljanje kalendarom
+        \item Servis za obaveštenja - eksterno komuniciranje putem email-a i drugih kanala
+    \end{itemize}
+
+    Svaki servis mora posedovati vlasništvo nad sopstvenim podacima i interakcije sa drugim 
+    servisima moraju se odvijati isključivo preko jasno definisanih \textit{API}-ja ili asinhronih događaja.
+
+    \subsection{Međuservisna komunikacija}
+
+    \subsubsection*{Sinhrona i asinhrona komunikacija}
+
+    Sinhrona komunikacija (kroz \textit{REST API}) pogodna je za operacije koje zahtevaju trenutni odgovor, 
+    kao što su provere dostupnosti ili autentifikacija korisnika. U ovakvim scenarijima, preporučuje se 
+    implementacija ``prekidača kola`` (\textit{Circuit Breaker}) radi otpornosti sistema - u slučaju 
+    pada zavisnog servisa, pozivajući servis mora se ponašati predvidivo i stabilno.
+
+    Asinhrona komunikacija putem redova poruka (\textit{message queues}) pogodna je za sve 
+    operacije koje ne zahtevaju neposrednu potvrdu - na primer slanje obaveštenja ili 
+    logovanje aktivnosti. Ovakav pristup omogućava slabije povezivanje servisa (\textit{loose coupling}) 
+    i veću otpornost sistema.
+
+    \newpage
+
+    \subsection{Orkestracija pomoću Kubernetes platforme}
+
+    \subsubsection*{Automatsko skaliranje i nadzor}
+
+    \textbf{Kubernetes} omogućava automatsko skaliranje broja instanci servisa (\textbf{\textit{pods}}) u 
+    zavisnosti od opterećenja (CPU, memorija, broj zahteva). Moguće je koristiti i prediktivne 
+    algoritme na osnovu istorije prethodnih opterećenja.
+
+    Servisi se otkrivaju automatski putem ugrađenog \textit{DNS} sistema, dok
+    postepena ažuriranja (\textit{rolling updates}) omogućavaju neprekidno korišćenje servisa. \textit{Health checks} testovi osiguravaju da 
+    samo funkcionalni servisi primaju saobraćaj.
 
 
 \newpage
